@@ -23,18 +23,18 @@
             const button = document.getElementById('share-button')
             button.addEventListener('click', share)
 
-            async function getFile(url, name) {
+            async function getPdfFile(url, name) {
                 const response = await fetch(url)
                 const blob = await response.blob()
-                return new File([blob], name)
+                return new File([blob], name, { type: 'application/pdf' })
             }
 
             async function share() {
                 console.log('clicked share')
                 const data = {
                     files: [
-                        await getFile('./sample.pdf', 'sample.pdf'),
-                        await getFile('./journal.pdf', 'journal.pdf'),
+                        await getPdfFile('./sample.pdf', 'sample.pdf'),
+                        await getPdfFile('./journal.pdf', 'journal.pdf'),
                     ]
                 }
                 console.log('files have been fetched!')
