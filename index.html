@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de-DE">
+    <head>
+        <meta charset="UTF-8">
+        <title>Web Share API test</title>
+        <style>
+            button {
+                border: none;
+                background-color: #f70;
+                color: white;
+                font-family: sans-serif;
+                font-size: 18px;
+                padding: 0.7rem 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <button onclick="share">Dateien teilen</button>
+        <script>
+            async function getFile(url, name) {
+                const response = await fetch(url)
+                const blob = await response.blob()
+                return new File([blob], name)
+            }
+
+            async function share() {
+                const data = {
+                    files: [
+                        await getFile('./sample.pdf', 'sample.pdf'),
+                        await getFile('./journal.pdf', 'journal.pdf'),
+                    ]
+                }
+                if (!navigator.canShare(data)) {
+                    alert("Das Teilen der Dateien wird von Ihrem Browser nicht unterstützt!")
+                } else {
+                    navigator.share(data)
+                }
+            }
+        </script>
+    </body>
+</html>
