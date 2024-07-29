@@ -9,21 +9,28 @@
                 padding: 1rem;
                 text-align: center;
             }
-            #share-button {
+            a, button {
                 border: none;
                 background-color: #eb6e00;
                 color: white;
                 font-family: sans-serif;
                 font-size: 20px;
                 padding: 0.7rem 1rem;
+                text-decoration: none;
+                display: inline-block;
             }
-            #share-button:hover, #share-button:focus {
+            a:hover, a:focus, button:hover, button:focus {
                 background-color: #c75d00;
             }
         </style>
     </head>
     <body>
         <button id="share-button">Dateien teilen</button>
+        <br />
+        <br />
+        <br />
+        <a id="download-button" href="./journal.pdf" download="journal.pdf">1 Datei herunterladen</a>
+
         <script>
             const button = document.getElementById('share-button')
             button.addEventListener('click', share)
@@ -35,20 +42,17 @@
             }
 
             async function share() {
-                console.log('clicked share')
                 const data = {
                     files: [
                         await getPdfFile('./sample.pdf', 'sample.pdf'),
                         await getPdfFile('./journal.pdf', 'journal.pdf'),
                     ]
                 }
-                console.log('files have been fetched!')
-                if (!navigator.canShare(data)) {
+                if (!('share' in navigator) || !navigator.canShare(data)) {
                     alert("Das Teilen der Dateien wird von Ihrem Browser nicht unterstützt!")
                 } else {
                     navigator.share(data)
                 }
-                console.log('share finished')
             }
         </script>
     </body>
