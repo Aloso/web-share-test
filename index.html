@@ -63,7 +63,11 @@
                 if (!('share' in navigator) || !navigator.canShare(data)) {
                     alert("Das Teilen der Dateien wird von Ihrem Browser nicht unterstützt!")
                 } else {
-                    navigator.share(data)
+                    try {
+                        navigator.share(data)
+                    } catch (e) {
+                        alert(e.message)
+                    }
                 }
             }
         </script>
