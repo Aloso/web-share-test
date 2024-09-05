@@ -94,7 +94,7 @@
                     return
                 }
                 if (files.length === 1) {
-                    downloadFile(files[0], files[0].name1)
+                    downloadFile(files[0], files[0].name)
                 } else {
                     const fileName = 'archive.zip'
                     const zipFile = await makeZip(files, fileName)
