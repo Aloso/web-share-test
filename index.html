@@ -23,6 +23,9 @@
             a:hover, a:focus, button:hover, button:focus {
                 background-color: #c75d00;
             }
+            button:disabled {
+                background-color: #666666;
+            }
 
             #file-number {
                 width: 2rem;
@@ -30,36 +33,51 @@
         </style>
     </head>
     <body>
-        Dateien: <input type="number" value="1" min="1" max="20" id="file-number" />
+        Dateien: <input type="file" id="files-input" multiple />
         <br />
         <br />
-        <button id="share-button">Dateien teilen</button>
+        <button id="share-button" disabled>0 Dateien teilen</button>
         <br />
         <br />
         <br />
-        <a id="download-button" href="./journal.pdf" download="journal.pdf">1 Datei herunterladen</a>
+        <button id="download-button" disabled>0 Dateien herunterladen</a>
 
-        <script>
-            const button = document.getElementById('share-button')
-            button.addEventListener('click', share)
+        <script type="module">
+            import JSZip from 'https://esm.run/jszip';
 
-            async function getPdfFile(url, name) {
-                const response = await fetch(url)
-                const blob = await response.blob()
-                return new File([blob], name, { type: 'application/pdf' })
+            const shareButton = document.getElementById('share-button')
+            const downloadButton = document.getElementById('download-button')
+            const input = document.getElementById('files-input')
+            
+            shareButton.addEventListener('click', share)
+            downloadButton.addEventListener('click', download)
+            input.addEventListener('change', handleChange, false)
+            
+            let files;
+
+            function setEnabled(enabled) {
+                shareButton.disabled = !enabled
+                downloadButton.disabled = !enabled
+            }
+
+            function handleChange(event) {
+                const fileList = event.target.files
+                const len = fileList.length
+                if (len > 10) {
+                    alert(`Es können maximal 10 Dateien geteilt werden, aber es wurden ${len} Dateien ausgewählt`)
+                    setEnabled(false)
+                    return
+                }
+                files = [...fileList]
+                console.log(files)
+                setEnabled(len > 0)
+                const numberText = `${len} Datei${len === 1 ? '' : 'en'}`
+                downloadButton.textContent = `${numberText} herunterladen`
+                shareButton.textContent = `${numberText} teilen`
             }
 
             async function share() {
-                const count = +document.getElementById('file-number').value
-                const data = {
-                    files: await Promise.all(
-                        new Array(count).fill(0).map((_, i) => getPdfFile('./sample.pdf', `${i}.pdf`))
-                    ),
-                    // files: [
-                    //     await getPdfFile('./sample.pdf', 'sample.pdf'),
-                    //     await getPdfFile('./journal.pdf', 'journal.pdf'),
-                    // ]
-                }
+                const data = { files }
                 if (!('share' in navigator) || !navigator.canShare(data)) {
                     alert("Das Teilen der Dateien wird von Ihrem Browser nicht unterstützt!")
                 } else {
@@ -69,6 +87,39 @@
                         alert(e.message)
                     }
                 }
+            }
+
+            async function download() {
+                if (files.length === 0) {
+                    return
+                }
+                if (files.length === 1) {
+                    downloadFile(files[0], files[0].name1)
+                } else {
+                    const fileName = 'archive.zip'
+                    const zipFile = await makeZip(files, fileName)
+                    downloadFile(zipFile, fileName)
+                }
+            }
+
+            async function makeZip(files, fileName) {
+                const zip = new JSZip()
+                for (const file of files) {
+                    zip.file(file.name, file)
+                }
+                const array = await zip.generateAsync({ type: 'uint8array' });
+                return new File([array], fileName, { type: 'application/zip' });
+            }
+
+            function downloadFile(file, fileName) {
+                const url = URL.createObjectURL(file);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName;
+                document.body.append(a);
+                a.click();
+                URL.revokeObjectURL(url);
             }
         </script>
     </body>
